@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ENTEC 2025 - Quiz Interativo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .screen {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Title Screen */
+        #titleScreen {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 100%);
+        }
+
+        .title {
+            font-size: 4rem;
+            color: #00ff88;
+            margin-bottom: 30px;
+            text-shadow: 4px 4px 0px #000;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 4px 4px 0px #000, 0 0 20px #00ff88; }
+            50% { text-shadow: 4px 4px 0px #000, 0 0 40px #00ff88, 0 0 60px #00ff88; }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 60px;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        .start-button {
+            background-color: #00ff88;
+            color: #000;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.2rem;
+            padding: 20px 40px;
+            border: 4px solid #000;
+            box-shadow: 6px 6px 0px #000;
+            cursor: pointer;
+            transition: all 0.1s;
+            text-transform: uppercase;
+        }
+
+        .start-button:hover {
+            background-color: #00cc6f;
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0px #000;
+        }
+
+        .start-button:active {
+            transform: translate(4px, 4px);
+            box-shadow: 2px 2px 0px #000;
+        }
+
+        /* Game Screen */
+        #gameScreen {
+            flex-direction: column;
+            background: linear-gradient(to bottom, #0f3460 0%, #16213e 100%);
+            position: relative;
+        }
+
+        #caixa-pergunta {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 4px solid #00ff88;
+            padding: 20px 30px;
+            max-width: 80%;
+            text-align: center;
+            font-size: 1rem;
+            line-height: 1.6;
+            z-index: 10;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        #personagem {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: #00ff88;
+            border: 3px solid #000;
+            border-radius: 4px;
+            font-size: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.7);
+            transition: transform 0.05s;
+        }
+
+        .opcao-resposta {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 3px solid #fff;
+            padding: 20px;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            max-width: 250px;
+            backdrop-filter: blur(5px);
+        }
+
+        .opcao-resposta:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: #00ff88;
+            transform: scale(1.05);
+        }
+
+        .opcao-resposta.colidindo {
+            background-color: rgba(0, 255, 136, 0.3);
+            border-color: #00ff88;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.8);
+            transform: scale(1.1);
+        }
+
+        /* Posições das opções */
+        .opcao-resposta:nth-child(4) { 
+            top: 150px; 
+            left: 50px; 
+} /* Opção 1 -> Topo Esquerda */
+
+        .opcao-resposta:nth-child(5) { 
+            top: 150px; 
+            right: 50px; 
+} /* Opção 2 -> Topo Direita */
+
+        .opcao-resposta:nth-child(6) { 
+            bottom: 100px; 
+            left: 50px; 
+} /* Opção 3 -> Baixo Esquerda */
+
+        .opcao-resposta:nth-child(7) { 
+            bottom: 100px; 
+            right: 50px; 
+} /* Opção 4 -> Baixo Direita */
+
+        .instrucoes {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.6rem;
+            color: #00ff88;
+            text-align: center;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        /* Result Screen */
+        #resultScreen {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 100%);
+        }
+
+        .result-title {
+            font-size: 2.5rem;
+            color: #00ff88;
+            margin-bottom: 40px;
+            text-shadow: 4px 4px 0px #000;
+        }
+
+        .result-box {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 4px solid #00ff88;
+            padding: 40px;
+            max-width: 800px;
+            margin-bottom: 40px;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+        }
+
+        .profile-name {
+            font-size: 2rem;
+            color: #00ff88;
+            margin-bottom: 30px;
+            text-decoration: underline;
+        }
+
+        .profile-description {
+            font-size: 0.9rem;
+            line-height: 1.8;
+            color: #fff;
+        }
+
+        .restart-button {
+            background-color: #00ff88;
+            color: #000;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1rem;
+            padding: 15px 35px;
+            border: 4px solid #000;
+            box-shadow: 6px 6px 0px #000;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .restart-button:hover {
+            background-color: #00cc6f;
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0px #000;
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 0.8rem;
+            }
+
+            .start-button {
+                font-size: 0.9rem;
+                padding: 15px 30px;
+            }
+
+            #caixa-pergunta {
+                font-size: 0.7rem;
+                padding: 15px;
+            }
+
+            .opcao-resposta {
+                font-size: 0.6rem;
+                padding: 15px;
+                max-width: 180px;
+            }
+
+            .opcao-resposta:nth-child(2) { top: 120px; left: 20px; }
+            .opcao-resposta:nth-child(3) { top: 120px; right: 20px; }
+            .opcao-resposta:nth-child(4) { bottom: 80px; left: 20px; }
+            .opcao-resposta:nth-child(5) { bottom: 80px; right: 20px; }
+
+            .result-title {
+                font-size: 1.5rem;
+            }
+
+            .profile-name {
+                font-size: 1.3rem;
+            }
+
+            .profile-description {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Title Screen -->
+    <div id="titleScreen" class="screen active">
+        <h1 class="title">ENTEC 2025</h1>
+        <p class="subtitle">Descubra seu perfil digital</p>
+        <button class="start-button" id="startBtn">Iniciar</button>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="gameScreen" class="screen">
+        <div id="caixa-pergunta"></div>
+        <div id="personagem">👾</div>
+        <div class="instrucoes">Use as setas ← ↑ ↓ → para mover o personagem e colidir com a resposta desejada</div>
+    </div>
+
+    <!-- Result Screen -->
+    <div id="resultScreen" class="screen">
+        <h2 class="result-title">SEU RESULTADO</h2>
+        <div class="result-box">
+            <div class="profile-name" id="profileName"></div>
+            <div class="profile-description" id="profileDesc"></div>
+        </div>
+        <button class="restart-button" id="restartBtn">Jogar Novamente</button>
+    </div>
+
+    <script>
+        // Game data
+        const perguntas = [
+            {
+                pergunta: "Qual sua rede social favorita?",
+                opcoes: [
+                    { texto: "Instagram / TikTok", perfil: "A" },
+                    { texto: "YouTube / Reddit", perfil: "B" },
+                    { texto: "X (Twitter)", perfil: "C" },
+                    { texto: "LinkedIn", perfil: "D" }
+                ]
+            },
+            {
+                pergunta: "Quando você abre uma rede, o que faz primeiro?",
+                opcoes: [
+                    { texto: "Rolo o feed para ver o que há de novo", perfil: "B" },
+                    { texto: "Checo meus likes e comentários", perfil: "A" },
+                    { texto: "Vejo os 'trending topics' para me atualizar", perfil: "C" },
+                    { texto: "Penso em algo para postar", perfil: "A" }
+                ]
+            },
+            {
+                pergunta: "Um post polêmico aparece no seu feed. Você:",
+                opcoes: [
+                    { texto: "Entro nos comentários para dar minha opinião", perfil: "C" },
+                    { texto: "Leio os comentários só pela confusão", perfil: "B" },
+                    { texto: "Ignoro e sigo em frente", perfil: "D" },
+                    { texto: "Penso em como eu faria um post melhor sobre o tema", perfil: "A" }
+                ]
+            },
+            {
+                pergunta: "O que é mais importante para você?",
+                opcoes: [
+                    { texto: "A qualidade da minha foto/vídeo", perfil: "A" },
+                    { texto: "Achar a informação que eu procuro", perfil: "D" },
+                    { texto: "Me entreter sem ser notado", perfil: "B" },
+                    { texto: "Ter uma boa conversa nos comentários", perfil: "C" }
+                ]
+            }
+        ];
+
+        const perfis = {
+            A: {
+                nome: "O Criador de Conteúdo!",
+                descricao: "Você vê as redes como um palco. Seu foco é criar, postar e compartilhar sua visão com o mundo."
+            },
+            B: {
+                nome: "O Observador Mestre!",
+                descricao: "Você é o famoso 'lurker'. Prefere mil vezes consumir conteúdo a criar. Você sabe de tudo que acontece, mas assiste de camarote."
+            },
+            C: {
+                nome: "O Engajado!",
+                descricao: "Para você, rede social é sinônimo de interação. Você adora um debate, responder comentários e usar os 'trending topics' para se posicionar."
+            },
+            D: {
+                nome: "O Pragmático!",
+                descricao: "Você usa as redes como uma ferramenta. Seja para trabalho, notícias ou compras, você entra, resolve o que precisa e sai. Sem perda de tempo."
+            }
+        };
+
+        // Game state
+        let currentQuestion = 0;
+        let pontuacao = { A: 0, B: 0, C: 0, D: 0 };
+        let personagemX = 0;
+        let personagemY = 0;
+        let keys = {};
+        let animationId = null;
+        let opcoesElements = [];
+
+        // Elements
+        const personagem = document.getElementById('personagem');
+        const caixaPergunta = document.getElementById('caixa-pergunta');
+        const gameScreen = document.getElementById('gameScreen');
+
+        // Event listeners
+        document.getElementById('startBtn').addEventListener('click', startGame);
+        document.getElementById('restartBtn').addEventListener('click', restartGame);
+
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            e.preventDefault();
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        function startGame() {
+            document.getElementById('titleScreen').classList.remove('active');
+            document.getElementById('gameScreen').classList.add('active');
+            
+            currentQuestion = 0;
+            pontuacao = { A: 0, B: 0, C: 0, D: 0 };
+            
+            // Posição inicial do personagem
+            personagemX = window.innerWidth / 2 - 20;
+            personagemY = window.innerHeight / 2 - 20;
+            personagem.style.left = personagemX + 'px';
+            personagem.style.top = personagemY + 'px';
+            
+            loadQuestion();
+            gameLoop();
+        }
+
+        function loadQuestion() {
+            if (currentQuestion >= perguntas.length) {
+                endGame();
+                return;
+            }
+
+            const pergunta = perguntas[currentQuestion];
+            caixaPergunta.textContent = pergunta.pergunta;
+
+            // Remove opções antigas
+            opcoesElements.forEach(el => el.remove());
+            opcoesElements = [];
+
+            // Cria novas opções
+            pergunta.opcoes.forEach((opcao, index) => {
+                const opcaoDiv = document.createElement('div');
+                opcaoDiv.className = 'opcao-resposta';
+                opcaoDiv.textContent = opcao.texto;
+                opcaoDiv.dataset.perfil = opcao.perfil;
+                gameScreen.appendChild(opcaoDiv);
+                opcoesElements.push(opcaoDiv);
+            });
+        }
+
+        function gameLoop() {
+            updatePersonagem();
+            checkCollisions();
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function updatePersonagem() {
+            const speed = 5;
+
+            if (keys['ArrowLeft']) {
+                personagemX -= speed;
+            }
+            if (keys['ArrowRight']) {
+                personagemX += speed;
+            }
+            if (keys['ArrowUp']) {
+                personagemY -= speed;
+            }
+            if (keys['ArrowDown']) {
+                personagemY += speed;
+            }
+
+            // Limites da tela
+            personagemX = Math.max(0, Math.min(window.innerWidth - 40, personagemX));
+            personagemY = Math.max(0, Math.min(window.innerHeight - 40, personagemY));
+
+            personagem.style.left = personagemX + 'px';
+            personagem.style.top = personagemY + 'px';
+        }
+
+        function checkCollisions() {
+            const personagemRect = personagem.getBoundingClientRect();
+
+            opcoesElements.forEach(opcao => {
+                const opcaoRect = opcao.getBoundingClientRect();
+
+                const isColliding = !(
+                    personagemRect.right < opcaoRect.left ||
+                    personagemRect.left > opcaoRect.right ||
+                    personagemRect.bottom < opcaoRect.top ||
+                    personagemRect.top > opcaoRect.bottom
+                );
+
+                if (isColliding) {
+                    opcao.classList.add('colidindo');
+                    selectAnswer(opcao.dataset.perfil);
+                } else {
+                    opcao.classList.remove('colidindo');
+                }
+            });
+        }
+
+        let answerSelected = false;
+
+        function selectAnswer(perfil) {
+            if (answerSelected) return;
+            
+            answerSelected = true;
+            pontuacao[perfil]++;
+
+            // Feedback visual
+            personagem.style.transform = 'scale(1.3)';
+            setTimeout(() => {
+                personagem.style.transform = 'scale(1)';
+            }, 200);
+
+            setTimeout(() => {
+                currentQuestion++;
+                answerSelected = false;
+                
+                // Reposiciona personagem
+                personagemX = window.innerWidth / 2 - 20;
+                personagemY = window.innerHeight / 2 - 20;
+                
+                loadQuestion();
+            }, 500);
+        }
+
+        function endGame() {
+            cancelAnimationFrame(animationId);
+            
+            // Calcula perfil vencedor
+            let maxPerfil = 'A';
+            let maxPontos = pontuacao.A;
+
+            for (let perfil in pontuacao) {
+                if (pontuacao[perfil] > maxPontos) {
+                    maxPontos = pontuacao[perfil];
+                    maxPerfil = perfil;
+                }
+            }
+
+            // Mostra resultado
+            document.getElementById('gameScreen').classList.remove('active');
+            document.getElementById('resultScreen').classList.add('active');
+
+            document.getElementById('profileName').textContent = perfis[maxPerfil].nome;
+            document.getElementById('profileDesc').textContent = perfis[maxPerfil].descricao;
+        }
+
+        function restartGame() {
+            document.getElementById('resultScreen').classList.remove('active');
+            document.getElementById('titleScreen').classList.add('active');
+        }
+    </script>
+</body>
+</html>
