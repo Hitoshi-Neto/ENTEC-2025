@@ -318,8 +318,8 @@
                 opcoes: [
                     { texto: "Instagram / TikTok", perfil: "A" },
                     { texto: "YouTube / Reddit", perfil: "B" },
-                    { texto: "X (Twitter)", perfil: "C" },
-                    { texto: "LinkedIn", perfil: "D" }
+                    { texto: "X (Twitter) / Discord", perfil: "C" },
+                    { texto: "WhatsApp / Telegram", perfil: "D" }
                 ]
             },
             {
@@ -327,8 +327,8 @@
                 opcoes: [
                     { texto: "Rolo o feed para ver o que há de novo", perfil: "B" },
                     { texto: "Checo meus likes e comentários", perfil: "A" },
-                    { texto: "Vejo os 'trending topics' para me atualizar", perfil: "C" },
-                    { texto: "Penso em algo para postar", perfil: "A" }
+                    { texto: "Vejo os 'trending topics' ou menções", perfil: "C" },
+                    { texto: "Respondo meus grupos privados", perfil: "D" }
                 ]
             },
             {
@@ -336,7 +336,7 @@
                 opcoes: [
                     { texto: "Entro nos comentários para dar minha opinião", perfil: "C" },
                     { texto: "Leio os comentários só pela confusão", perfil: "B" },
-                    { texto: "Ignoro e sigo em frente", perfil: "D" },
+                    { texto: "Mando o link no grupo dos amigos para fofocar", perfil: "D" },
                     { texto: "Penso em como eu faria um post melhor sobre o tema", perfil: "A" }
                 ]
             },
@@ -344,9 +344,9 @@
                 pergunta: "O que é mais importante para você?",
                 opcoes: [
                     { texto: "A qualidade da minha foto/vídeo", perfil: "A" },
-                    { texto: "Achar a informação que eu procuro", perfil: "D" },
-                    { texto: "Me entreter sem ser notado", perfil: "B" },
-                    { texto: "Ter uma boa conversa nos comentários", perfil: "C" }
+                    { texto: "Achar conteúdo sobre meus hobbies", perfil: "B" },
+                    { texto: "Manter contato direto com meus amigos", perfil: "D" },
+                    { texto: "Participar de uma comunidade ativa", perfil: "C" }
                 ]
             }
         ];
@@ -354,19 +354,19 @@
         const perfis = {
             A: {
                 nome: "O Criador de Conteúdo!",
-                descricao: "Você vê as redes como um palco. Seu foco é criar, postar e compartilhar sua visão com o mundo."
+                descricao: "Você vê as redes como um palco. Seu foco é criar, postar e compartilhar sua visão com o mundo, sempre de olho na estética e no engajamento."
             },
             B: {
                 nome: "O Observador Mestre!",
-                descricao: "Você é o famoso 'lurker'. Prefere mil vezes consumir conteúdo a criar. Você sabe de tudo que acontece, mas assiste de camarote."
+                descricao: "Você é o famoso 'lurker'. Prefere mil vezes consumir conteúdo (longo ou de nicho) a criar. Você sabe de tudo que acontece, mas assiste de camarote."
             },
             C: {
-                nome: "O Engajado!",
-                descricao: "Para você, rede social é sinônimo de interação. Você adora um debate, responder comentários e usar os 'trending topics' para se posicionar."
+                nome: "O Comunicador!",
+                descricao: "Seu foco é a conversa! Seja em debates públicos no X ou em comunidades fechadas no Discord, você usa as redes para trocar ideias em tempo real e se conectar por interesses."
             },
             D: {
-                nome: "O Pragmático!",
-                descricao: "Você usa as redes como uma ferramenta. Seja para trabalho, notícias ou compras, você entra, resolve o que precisa e sai. Sem perda de tempo."
+                nome: "O Conector!",
+                descricao: "Você é o mestre dos grupos! Para você, o 'social' é privado. Você usa o WhatsApp e o Telegram para organizar sua vida, manter contato com amigos próximos e focar em conversas diretas."
             }
         };
 
@@ -522,20 +522,37 @@
             // Calcula perfil vencedor
             let maxPerfil = 'A';
             let maxPontos = pontuacao.A;
+            let empates = [];
 
             for (let perfil in pontuacao) {
                 if (pontuacao[perfil] > maxPontos) {
                     maxPontos = pontuacao[perfil];
                     maxPerfil = perfil;
+                    empates = [perfil]; // Reseta lista de empates
+                } else if (pontuacao[perfil] === maxPontos && perfil !== maxPerfil) {
+                    empates.push(perfil);
                 }
+            }
+            
+            let perfilFinal = maxPerfil;
+            let perfilData = perfis[perfilFinal];
+            
+            // Lógica de empate (simples, apenas informa)
+            if (empates.length > 1) {
+                perfilData = {
+                    nome: "Um Misto Digital!",
+                    descricao: "Você é um usuário híbrido! Você navega entre ser um Criador, Observador, Comunicador ou Conector dependendo do seu humor. Você domina todos os aspectos das redes!"
+                };
+            } else {
+                perfilData = perfis[perfilFinal];
             }
 
             // Mostra resultado
             document.getElementById('gameScreen').classList.remove('active');
             document.getElementById('resultScreen').classList.add('active');
 
-            document.getElementById('profileName').textContent = perfis[maxPerfil].nome;
-            document.getElementById('profileDesc').textContent = perfis[maxPerfil].descricao;
+            document.getElementById('profileName').textContent = perfilData.nome;
+            document.getElementById('profileDesc').textContent = perfilData.descricao;
         }
 
         function restartGame() {
